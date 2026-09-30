@@ -39,7 +39,7 @@
           <div class="box">
             <div class="box-h">Just Want to Practice?</div>
             <div class="box-b">
-              <p class="small">Solve puzzles on your own with a timer. Uses the difficulty picked below.</p>
+              <p class="small">Solve puzzles on your own with a timer.</p>
               <button id="btn-solo" class="btn btn-gray">Practice Solo &raquo;</button>
             </div>
           </div>
@@ -47,12 +47,6 @@
           <div class="box">
             <div class="box-h">Step 2a: Host a Game</div>
             <div class="box-b">
-              <label for="difficulty">Difficulty:</label>
-              <select id="difficulty">
-                <option value="easy">Easy (4 letters given)</option>
-                <option value="medium" selected>Medium (2 letters given)</option>
-                <option value="hard">Hard (no letters given)</option>
-              </select>
               <label for="rounds">Match length:</label>
               <select id="rounds">
                 <option value="1">Single puzzle</option>
@@ -83,7 +77,7 @@
               <li>Click a box and type a letter. Every box with the same code letter fills in at once.</li>
               <li><b>Backspace</b>, <b>Delete</b> or <b>Space</b> clears a letter. The <b>arrow keys</b> move you around.</li>
               <li><b>Letters Remaining</b> shows which answer letters you haven't used yet.</li>
-              <li>Turn on <i>Letter Frequencies</i> to see how often each code letter appears. Tip: <b>E, T, A, O</b> are the most common letters in English!</li>
+              <li>The <i>Letter Frequency</i> table under the puzzle shows how often each code letter appears. Tip: <b>E, T, A, O</b> are the most common letters in English!</li>
               <li><b>Hints:</b> either player can propose one at any time. If your rival agrees, one letter is revealed on <u>both</u> boards.</li>
             </ul>
             <p>You'll both get the <i>exact same</i> cipher. You can watch your rival's progress bar, but not their letters.</p>
@@ -142,12 +136,16 @@
               <div id="source"></div>
             </div>
 
+            <div class="box freq-box">
+              <div class="box-h">Letter Frequency</div>
+              <div class="freq-scroll"><table id="freq"></table></div>
+            </div>
+
             <div id="status" class="msg"></div>
 
             <div id="controls">
               <button id="btn-hint" class="btn btn-orange">Propose a Hint</button>
               <button id="btn-giveup" class="btn btn-gray">Give Up</button>
-              <label class="check"><input type="checkbox" id="opt-freq"> Letter frequencies</label>
               <label class="check"><input type="checkbox" id="opt-kbd"> On-screen keyboard</label>
             </div>
 
@@ -165,16 +163,24 @@
               <div class="box-h">Letters Remaining</div>
               <div class="box-b"><div id="remaining"></div></div>
             </div>
-            <div class="box hidden" id="freq-panel">
-              <div class="box-h">Letter Frequencies</div>
-              <div class="box-b"><div id="freq"></div></div>
-            </div>
             <div class="box">
-              <div class="box-h">Quick Tips</div>
-              <div class="box-b small">
-                <p>Look for one-letter words: they're almost always <b>A</b> or <b>I</b>.</p>
-                <p>A common three-letter word is often <b>THE</b> or <b>AND</b>.</p>
-                <p>After an apostrophe, try <b>S</b>, <b>T</b> or <b>LL</b>.</p>
+              <div class="box-h">Frequency Table of English Letters</div>
+              <div class="box-b">
+                <p class="small">How often each letter shows up in typical English text. Match them against the puzzle's most common code letters.</p>
+                <ol id="eng-freq">
+                  <li><b>E</b><span class="eng-bar"><span style="width:100%"></span></span><em>12.7%</em></li>
+                  <li><b>T</b><span class="eng-bar"><span style="width:72%"></span></span><em>9.1%</em></li>
+                  <li><b>A</b><span class="eng-bar"><span style="width:65%"></span></span><em>8.2%</em></li>
+                  <li><b>O</b><span class="eng-bar"><span style="width:59%"></span></span><em>7.5%</em></li>
+                  <li><b>I</b><span class="eng-bar"><span style="width:55%"></span></span><em>7.0%</em></li>
+                  <li><b>N</b><span class="eng-bar"><span style="width:53%"></span></span><em>6.7%</em></li>
+                  <li><b>S</b><span class="eng-bar"><span style="width:50%"></span></span><em>6.3%</em></li>
+                  <li><b>H</b><span class="eng-bar"><span style="width:48%"></span></span><em>6.1%</em></li>
+                  <li><b>R</b><span class="eng-bar"><span style="width:47%"></span></span><em>6.0%</em></li>
+                  <li><b>D</b><span class="eng-bar"><span style="width:34%"></span></span><em>4.3%</em></li>
+                  <li><b>L</b><span class="eng-bar"><span style="width:31%"></span></span><em>4.0%</em></li>
+                  <li><b>C</b><span class="eng-bar"><span style="width:22%"></span></span><em>2.8%</em></li>
+                </ol>
               </div>
             </div>
             <p class="small"><a href="#" id="btn-leave">&laquo; Leave game</a></p>

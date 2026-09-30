@@ -4,7 +4,8 @@ A head-to-head cryptogram duel with a late-2000s puzzle-site look. Two players g
 same substitution cipher of a famous quotation and race to crack it. Mechanics
 follow the classic Puzzle Baron cryptogram: click a cell, type a letter, and it
 fills every matching code letter. There's also a Letters Remaining strip, a
-letter-frequency table, an on-screen keyboard, and the quote's source shown in
+letter-frequency table under the puzzle, a reference chart of English letter
+frequencies, an on-screen keyboard, and the quote's source shown in
 the clear.
 
 No build step and no backend. It's plain HTML, CSS and JavaScript, so it runs on
@@ -16,8 +17,8 @@ GitHub Pages as is.
 - **Join Room**: enter the code, or just open the share link.
 - **Practice Alone**: solo mode with a timer.
 
-Matches are a single puzzle, best of 3, or best of 5. Difficulty sets how many
-letters start filled in (Easy 4, Medium 2, Hard 0).
+Matches are a single puzzle, best of 3, or best of 5. Every puzzle starts
+completely blank.
 
 **Hints:** either player can propose a hint at any time. If the other player
 agrees, the host picks a letter and it's revealed on *both* boards, so a hint

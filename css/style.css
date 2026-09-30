@@ -182,7 +182,7 @@ input:focus, select:focus { outline: none; border-color: #3b83d8; box-shadow: 0 
 #round-label { font-size: 10px; text-transform: uppercase; color: #aab4be; letter-spacing: 1px; }
 #timer { font: bold 22px "Courier New", monospace; color: #7dff6b; text-shadow: 0 0 6px rgba(125, 255, 107, 0.5); }
 body.solo #scoreboard .me > *, body.solo #scoreboard .opp > * { visibility: hidden; }
-body.solo .duel-only { display: none; }
+body.solo .duel-only { display: none !important; }
 
 #progress { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 10px; font-size: 11px; font-weight: bold; }
 .bar { display: flex; align-items: center; gap: 6px; }
@@ -234,11 +234,14 @@ body.solo .duel-only { display: none; }
   font: bold 13px "Courier New", monospace; background: linear-gradient(#fff, #e6eef7); border: 1px solid #b3c5d9; border-radius: 3px;
 }
 #remaining span.used { color: #bbb; background: #f2f2f2; border-color: #ddd; text-decoration: line-through; }
-#freq { display: flex; flex-wrap: wrap; gap: 3px; font-family: "Courier New", monospace; }
-#freq div { width: 30px; text-align: center; border: 1px solid #c9d6e3; border-radius: 3px; line-height: 1.25; padding: 2px 0; background: #fafcfe; }
-#freq div b { display: block; font-size: 13px; }
-#freq div small { color: var(--muted); font-size: 11px; }
-#freq div i { display: block; color: var(--given); font-style: normal; font-weight: bold; min-height: 1.2em; }
+.freq-box { margin: 10px 0 0; }
+.freq-scroll { overflow-x: auto; }
+#freq { width: 100%; border-collapse: collapse; font-family: "Courier New", monospace; }
+#freq th, #freq td { border: 1px solid #c9d6e3; text-align: center; padding: 3px 1px; }
+#freq th { font: bold 11px Verdana, sans-serif; background: #eef4fb; color: #1f3f66; padding: 3px 6px; text-align: left; }
+#freq tr:first-child td { font-weight: bold; font-size: 13px; background: #f7fafd; }
+#freq tr:last-child td { font-size: 12px; color: #1a5aa8; font-weight: bold; }
+#freq tr:last-child td.zero { color: #c3ccd6; font-weight: normal; }
 .game-side p { margin-bottom: 6px; }
 
 #kbd { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-bottom: 12px; }
@@ -257,7 +260,21 @@ body.solo .duel-only { display: none; }
   border: 2px solid #e6c200; border-radius: 8px; padding: 12px 16px;
 }
 #result h2 { margin: 0 0 4px; font: bold 22px "Trebuchet MS", Verdana, sans-serif; color: #b35900; text-shadow: 0 1px #fff; }
-#result-buttons .btn { margin: 6px 4px 0; }
+#result-buttons { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; margin-top: 10px; }
+#result-buttons .btn { margin: 0; min-width: 110px; }
+#result-buttons .btn-big { font-size: 14px; padding: 9px 22px; border-radius: 6px; }
+#result-buttons .btn-green { animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pulse {
+  50% { box-shadow: inset 0 1px rgba(255, 255, 255, 0.45), 0 0 10px 2px rgba(110, 200, 60, 0.7); }
+}
+
+#eng-freq { list-style: none; margin: 0; padding: 0; font-size: 12px; }
+#eng-freq li { display: flex; align-items: center; gap: 6px; padding: 2px 0; }
+#eng-freq li:nth-child(odd) { background: #f3f7fb; }
+#eng-freq b { width: 20px; text-align: center; font: bold 13px "Courier New", monospace; }
+#eng-freq em { width: 40px; text-align: right; font-style: normal; color: var(--muted); font-size: 11px; }
+.eng-bar { flex: 1; height: 9px; background: #e6edf4; border: 1px solid #c9d6e3; border-radius: 2px; overflow: hidden; }
+.eng-bar span { display: block; height: 100%; background: linear-gradient(#6aa8ec, #2a6cc0); }
 
 #overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.55); display: flex; align-items: center; justify-content: center; z-index: 10; }
 #overlay-text {

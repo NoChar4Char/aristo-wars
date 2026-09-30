@@ -5,7 +5,7 @@
     mode: null,            // "solo" | "duel"
     role: null,            // "host" | "guest"
     myName: "You", oppName: "Rival",
-    settings: { difficulty: "medium", rounds: 3 },
+    settings: { rounds: 3 },
     score: { host: 0, guest: 0 },
     roundNo: 0, usedQuotes: [],
     puzzle: null, guesses: {}, locked: new Set(), hinted: new Set(),
@@ -75,7 +75,7 @@
   function hostRoom() {
     if (!needNet()) return;
     S.mode = "duel"; S.role = "host"; S.myName = readName();
-    S.settings = { difficulty: $("#difficulty").value, rounds: +$("#rounds").value };
+    S.settings = { rounds: +$("#rounds").value };
     setMsg($("#lobby-msg"), "Opening a room…");
     Net.host({
       ready(code) {
@@ -239,7 +239,7 @@
   // ---------------------------------------------------------------- solo
   function startSolo() {
     S.mode = "solo"; S.role = "host"; S.myName = readName();
-    S.settings = { difficulty: $("#difficulty").value, rounds: 1 };
+    S.settings = { rounds: 1 };
     document.body.classList.add("solo");
     nextRound();
   }
@@ -259,9 +259,8 @@
     S.settings = m.settings;
     S.score = m.score;
     S.matchOver = false;
-    S.puzzle = buildPuzzle(m.qi, m.seed, m.settings.difficulty);
+    S.puzzle = buildPuzzle(m.qi, m.seed);
     S.guesses = {}; S.locked = new Set(); S.hinted = new Set();
-    for (const c of S.puzzle.givens) { S.guesses[c] = S.puzzle.sol[c]; S.locked.add(c); }
     S.hintsUsed = 0;
     clearHintRequest();
     S.roundOver = false; S.active = false; S.selected = -1;
@@ -272,8 +271,8 @@
     $("#me-name").textContent = S.myName;
     $("#opp-name").textContent = S.oppName;
     $("#round-label").textContent = S.mode === "solo"
-      ? `Practice · ${S.settings.difficulty}`
-      : `Round ${S.roundNo} · ${S.settings.difficulty} · first to ${winsNeeded()}`;
+      ? "Practice"
+      : `Round ${S.roundNo} · first to ${winsNeeded()}`;
     $("#timer").textContent = "0:00";
     $("#source").textContent = "— " + S.puzzle.author;
     updateScoreboard();
@@ -285,8 +284,8 @@
       S.active = true;
       S.startTime = Date.now();
       startTimer();
-      select(firstOpenIndex(0));
-      status("Go!");
+      refresh();
+      status("Go! Click any box to start.");
     });
   }
 
@@ -350,18 +349,20 @@
     });
     const used = new Set(Object.values(S.guesses));
     $("#remaining").innerHTML = [...ALPHA].map((l) => `<span class="${used.has(l) ? "used" : ""}">${l}</span>`).join("");
-    if (!$("#freq-panel").classList.contains("hidden")) renderFreq();
     const noneLeft = !S.puzzle || S.puzzle.letters.every((c) => S.locked.has(c));
     $("#btn-hint").textContent = S.mode === "solo" ? "Reveal a Letter" : S.hintPending === "me" ? "Hint Proposed…" : "Propose a Hint";
     $("#btn-hint").disabled = !S.active || !!S.hintPending || noneLeft;
     $("#btn-giveup").disabled = !S.active;
   }
 
+  // Two-row table under the puzzle: each code letter and how many times it appears.
   function renderFreq() {
     const counts = {};
     for (const ch of S.puzzle.cipherText) if (S.puzzle.sol[ch]) counts[ch] = (counts[ch] || 0) + 1;
-    $("#freq").innerHTML = [...ALPHA].map((l) =>
-      `<div><b>${l}</b><small>${counts[l] || 0}</small><i>${counts[l] ? S.guesses[l] || "" : ""}</i></div>`).join("");
+    const letters = [...ALPHA];
+    $("#freq").innerHTML =
+      `<tr><th>Letter</th>${letters.map((l) => `<td>${l}</td>`).join("")}</tr>` +
+      `<tr><th>Count</th>${letters.map((l) => `<td class="${counts[l] ? "" : "zero"}">${counts[l] || 0}</td>`).join("")}</tr>`;
   }
 
   function select(i) {
@@ -416,10 +417,9 @@
   }
 
   function progressPct() {
-    const open = S.puzzle.letters.filter((c) => !S.puzzle.givens.includes(c));
-    if (!open.length) return 100;
-    const right = open.filter((c) => S.guesses[c] === S.puzzle.sol[c]).length;
-    return Math.round((100 * right) / open.length);
+    const { letters, sol } = S.puzzle;
+    const right = letters.filter((c) => S.guesses[c] === sol[c]).length;
+    return Math.round((100 * right) / letters.length);
   }
 
   function setBar(who, pct) {
@@ -539,12 +539,14 @@
     $("#result-text").textContent = text;
     const box = $("#result-buttons");
     box.innerHTML = "";
-    for (const [label, fn] of buttons) {
+    buttons.forEach(([label, fn], i) => {
       const b = document.createElement("button");
+      const quiet = /leave|lobby/i.test(label);
+      b.className = "btn " + (quiet ? "btn-gray" : i === 0 ? "btn-green btn-big" : "btn-blue");
       b.textContent = label;
       b.onclick = fn;
       box.appendChild(b);
-    }
+    });
     $("#result").classList.remove("hidden");
     refresh();
   }
@@ -577,7 +579,6 @@
     $("#btn-hint-yes").onclick = () => answerHint(true);
     $("#btn-hint-no").onclick = () => answerHint(false);
     $("#btn-giveup").onclick = giveUp;
-    $("#opt-freq").onchange = (e) => { $("#freq-panel").classList.toggle("hidden", !e.target.checked); if (S.puzzle) renderFreq(); };
     const touch = window.matchMedia("(pointer: coarse)").matches;
     $("#opt-kbd").checked = touch;
     $("#kbd").classList.toggle("hidden", !touch);

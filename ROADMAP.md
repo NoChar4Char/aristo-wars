@@ -8,7 +8,8 @@ backend only when a feature truly needs shared, persistent state.
 - [x] Classic cryptogram board: click to select, type to fill every matching letter, arrow keys to move, Backspace to clear
 - [x] Letters Remaining, letter-frequency table, on-screen keyboard (on by default on touchscreens)
 - [x] Source shown in the clear, punctuation kept, no letter encodes to itself
-- [x] Difficulty by starting letters (Easy 4 / Medium 2 / Hard 0)
+- [x] Every puzzle starts blank, with no letters filled in
+- [x] Letter-frequency table (2 rows × 27 columns) under the puzzle, and a sidebar chart of English letter frequencies
 - [x] Hints by mutual agreement: either player proposes at any time, and if the other agrees, the same letter is revealed on both boards (free in practice mode)
 - [x] Late-2000s "Web 2.0" look: glossy header and nav tabs, boxed panels, sidebar, striped progress bars
 - [x] 1v1 over WebRTC (PeerJS): room code and share link, host referees, same seeded cipher for both players
@@ -40,6 +41,7 @@ The biggest risk today is that some pairs of players can't connect at all.
 
 - [ ] Expand the quote bank to 500+ public-domain quotes, stored in `quotes.json` with categories (literature, history, science, humor)
 - [ ] Category picker for the host
+- [ ] Difficulty levels based on quote length (short quotes are harder to crack)
 - [ ] **Patristocrat** mode (no word spaces), the classic hard variant
 - [ ] Encrypt the source line as well, as an extra-hard option
 - [ ] **Custom challenge**: each player writes a quote for the other to crack

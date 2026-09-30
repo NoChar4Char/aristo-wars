@@ -1,7 +1,5 @@
 (() => {
   const $ = (s) => document.querySelector(s);
-  const HINTS_PER_ROUND = 3;
-  const HINT_LOCK_MS = 10000;
 
   const S = {
     mode: null,            // "solo" | "duel"
@@ -12,8 +10,9 @@
     roundNo: 0, usedQuotes: [],
     puzzle: null, guesses: {}, locked: new Set(), hinted: new Set(),
     cells: [], selected: -1,
-    startTime: 0, timerId: null, lockedUntil: 0,
-    active: false, roundOver: false, matchOver: false, hintsLeft: HINTS_PER_ROUND,
+    startTime: 0, timerId: null,
+    active: false, roundOver: false, matchOver: false,
+    hintsUsed: 0, hintPending: null, // null | "me" (I proposed) | "opp" (rival proposed)
   };
 
   const other = (r) => (r === "host" ? "guest" : "host");
@@ -44,6 +43,10 @@
     if (room) $("#join-code").value = room.toUpperCase().slice(0, 4);
 
     $("#btn-solo").onclick = startSolo;
+    $("#nav-practice").onclick = (e) => {
+      e.preventDefault();
+      if (!$("#lobby").classList.contains("hidden")) startSolo();
+    };
     $("#btn-host").onclick = hostRoom;
     $("#btn-join").onclick = joinRoom;
     $("#join-code").addEventListener("keydown", (e) => { if (e.key === "Enter") joinRoom(); });
@@ -148,6 +151,22 @@
       case "roundEnd": // host -> guest
         applyRoundEnd(m);
         break;
+      case "hintAsk":
+        if (m.n === S.roundNo) onHintAsk();
+        break;
+      case "hintAgree": // guest -> host
+        if (S.role === "host" && m.n === S.roundNo && S.hintPending === "me") refereeHint();
+        break;
+      case "hintDecline":
+        if (m.n === S.roundNo && S.hintPending === "me") {
+          S.hintPending = null;
+          status(`${S.oppName} declined the hint.`, "bad");
+          refresh();
+        }
+        break;
+      case "hintGive": // host -> guest
+        if (m.n === S.roundNo) giveHint(m.c);
+        break;
       case "rematch":
         if (S.role === "host" && S.matchOver) startMatch();
         break;
@@ -191,6 +210,7 @@
 
   function applyRoundEnd(m) {
     S.roundOver = true; S.active = false;
+    clearHintRequest();
     S.score = m.score; S.matchOver = m.matchOver;
     stopTimer();
     revealSolution();
@@ -202,16 +222,17 @@
       ? `${iWon ? S.oppName + " gave up" : "You gave up"}.`
       : `${wName} cracked it in ${fmt(m.time)}.`;
     const tally = `${S.myName} ${S.score[S.role]} – ${S.score[other(S.role)]} ${S.oppName}`;
+    const hints = S.hintsUsed ? ` Shared hints: ${S.hintsUsed}.` : "";
 
     if (m.matchOver) {
       const btn = S.role === "host"
         ? [["Rematch", startMatch]]
         : [["Ask for Rematch", () => { Net.send({ t: "rematch" }); status("Rematch requested…"); }]];
-      showResult(iWon ? "Victory!" : "Defeat", `${how} Final score: ${tally}.`, [...btn, ["Leave", backToLobby]]);
+      showResult(iWon ? "Victory!" : "Defeat", `${how}${hints} Final score: ${tally}.`, [...btn, ["Leave", backToLobby]]);
     } else {
       const btn = S.role === "host" ? [["Next Round", nextRound]] : [];
       showResult(iWon ? "Round Won" : "Round Lost",
-        `${how} Score: ${tally}.${S.role === "guest" ? " Waiting for the host to start the next round…" : ""}`, btn);
+        `${how}${hints} Score: ${tally}.${S.role === "guest" ? " Waiting for the host to start the next round…" : ""}`, btn);
     }
   }
 
@@ -227,7 +248,7 @@
     S.roundOver = true; S.active = false;
     stopTimer();
     revealSolution();
-    const used = HINTS_PER_ROUND - S.hintsLeft;
+    const used = S.hintsUsed;
     showResult("Solved!", `You cracked it in ${fmt(time)}${used ? ` with ${used} hint${used > 1 ? "s" : ""}` : " without hints"}.`,
       [["New Puzzle", nextRound], ["Lobby", backToLobby]]);
   }
@@ -241,7 +262,8 @@
     S.puzzle = buildPuzzle(m.qi, m.seed, m.settings.difficulty);
     S.guesses = {}; S.locked = new Set(); S.hinted = new Set();
     for (const c of S.puzzle.givens) { S.guesses[c] = S.puzzle.sol[c]; S.locked.add(c); }
-    S.hintsLeft = HINTS_PER_ROUND; S.lockedUntil = 0;
+    S.hintsUsed = 0;
+    clearHintRequest();
     S.roundOver = false; S.active = false; S.selected = -1;
 
     show("game");
@@ -283,11 +305,6 @@
     stopTimer();
     S.timerId = setInterval(() => {
       $("#timer").textContent = fmt(elapsed());
-      const left = S.lockedUntil - Date.now();
-      if (S.lockedUntil) {
-        if (left > 0) status(`Hint penalty: board frozen for ${Math.ceil(left / 1000)}s…`);
-        else { S.lockedUntil = 0; $("#board").classList.remove("locked"); status(""); }
-      }
     }, 200);
   }
   function stopTimer() { clearInterval(S.timerId); S.timerId = null; }
@@ -297,7 +314,6 @@
   function renderBoard() {
     const board = $("#board");
     board.innerHTML = "";
-    board.classList.remove("locked");
     S.cells = [];
     for (const w of S.puzzle.cipherText.split(" ")) {
       const wd = document.createElement("div");
@@ -335,8 +351,9 @@
     const used = new Set(Object.values(S.guesses));
     $("#remaining").innerHTML = [...ALPHA].map((l) => `<span class="${used.has(l) ? "used" : ""}">${l}</span>`).join("");
     if (!$("#freq-panel").classList.contains("hidden")) renderFreq();
-    $("#btn-hint").textContent = `Hint (${S.hintsLeft})`;
-    $("#btn-hint").disabled = !S.active || S.hintsLeft === 0;
+    const noneLeft = !S.puzzle || S.puzzle.letters.every((c) => S.locked.has(c));
+    $("#btn-hint").textContent = S.mode === "solo" ? "Reveal a Letter" : S.hintPending === "me" ? "Hint Proposed…" : "Propose a Hint";
+    $("#btn-hint").disabled = !S.active || !!S.hintPending || noneLeft;
     $("#btn-giveup").disabled = !S.active;
   }
 
@@ -362,7 +379,7 @@
     return from < n ? from : 0;
   }
 
-  const canEdit = () => S.active && !S.lockedUntil && S.selected >= 0;
+  const canEdit = () => S.active && S.selected >= 0;
 
   function assign(p) {
     if (!canEdit()) return;
@@ -425,21 +442,68 @@
     else { Net.send({ t: "solved", n: S.roundNo, time }); status("Solved! Checking with the referee…", "good"); refresh(); }
   }
 
+  // Hints: free in practice. In a duel either player may propose one at any
+  // time; if the other agrees, the host picks a letter and it is revealed on
+  // BOTH boards, so a hint never gives one side an edge.
   function hint() {
-    if (!S.active || S.hintsLeft === 0 || S.lockedUntil) return;
-    const { letters, sol } = S.puzzle;
-    const wrong = letters.filter((c) => S.guesses[c] !== sol[c]);
-    if (!wrong.length) return;
-    const selC = S.selected >= 0 ? S.cells[S.selected].dataset.c : null;
-    const c = wrong.includes(selC) ? selC : wrong[Math.floor(Math.random() * wrong.length)];
-    const p = sol[c];
+    if (!S.active || S.hintPending) return;
+    if (S.mode === "solo") return giveHint(pickHintLetter());
+    S.hintPending = "me";
+    Net.send({ t: "hintAsk", n: S.roundNo });
+    status(`Hint proposed. Waiting for ${S.oppName} to agree…`);
+    refresh();
+  }
+
+  function onHintAsk() {
+    if (S.roundOver) return;
+    if (S.hintPending === "me") { // both proposed at once: that's agreement
+      if (S.role === "host") refereeHint();
+      return;
+    }
+    S.hintPending = "opp";
+    $("#hint-prompt-text").textContent = `${S.oppName} proposes a hint. One letter will be revealed for both of you. Agree?`;
+    $("#hint-prompt").classList.remove("hidden");
+    refresh();
+  }
+
+  function answerHint(yes) {
+    if (S.hintPending !== "opp") return;
+    clearHintRequest();
+    if (!yes) {
+      Net.send({ t: "hintDecline", n: S.roundNo });
+      status("You declined the hint.");
+      return refresh();
+    }
+    if (S.role === "host") refereeHint();
+    else { Net.send({ t: "hintAgree", n: S.roundNo }); status("Hint agreed. Revealing…"); }
+  }
+
+  function refereeHint() {
+    const c = pickHintLetter();
+    Net.send({ t: "hintGive", n: S.roundNo, c });
+    giveHint(c);
+  }
+
+  function pickHintLetter() {
+    const open = S.puzzle.letters.filter((c) => !S.locked.has(c));
+    return open.length ? open[Math.floor(Math.random() * open.length)] : null;
+  }
+
+  function clearHintRequest() {
+    S.hintPending = null;
+    $("#hint-prompt").classList.add("hidden");
+  }
+
+  function giveHint(c) {
+    clearHintRequest();
+    if (!c || S.roundOver) return refresh();
+    const p = S.puzzle.sol[c];
     for (const k of Object.keys(S.guesses)) if (S.guesses[k] === p) delete S.guesses[k];
     S.guesses[c] = p;
     S.locked.add(c); S.hinted.add(c);
-    S.hintsLeft--;
-    S.lockedUntil = Date.now() + HINT_LOCK_MS;
-    $("#board").classList.add("locked");
-    afterChange();
+    S.hintsUsed++;
+    status(`Hint: ${c} stands for ${p}.`, "good");
+    if (S.active) afterChange(); else refresh();
   }
 
   function giveUp() {
@@ -456,8 +520,6 @@
   function revealSolution() {
     const { sol } = S.puzzle;
     S.roundOver = true;
-    S.lockedUntil = 0;
-    $("#board").classList.remove("locked");
     S.cells.forEach((cell) => {
       const c = cell.dataset.c, g = S.guesses[c];
       cell.classList.toggle("wrong", !!g && g !== sol[c]);
@@ -512,6 +574,8 @@
   function initGameControls() {
     buildKeyboard();
     $("#btn-hint").onclick = hint;
+    $("#btn-hint-yes").onclick = () => answerHint(true);
+    $("#btn-hint-no").onclick = () => answerHint(false);
     $("#btn-giveup").onclick = giveUp;
     $("#opt-freq").onchange = (e) => { $("#freq-panel").classList.toggle("hidden", !e.target.checked); if (S.puzzle) renderFreq(); };
     const touch = window.matchMedia("(pointer: coarse)").matches;

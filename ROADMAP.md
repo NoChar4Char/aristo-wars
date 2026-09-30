@@ -9,7 +9,8 @@ backend only when a feature truly needs shared, persistent state.
 - [x] Letters Remaining, letter-frequency table, on-screen keyboard (on by default on touchscreens)
 - [x] Source shown in the clear, punctuation kept, no letter encodes to itself
 - [x] Difficulty by starting letters (Easy 4 / Medium 2 / Hard 0)
-- [x] Hints: 3 per puzzle, each freezes your board for 10 seconds
+- [x] Hints by mutual agreement: either player proposes at any time, and if the other agrees, the same letter is revealed on both boards (free in practice mode)
+- [x] Late-2000s "Web 2.0" look: glossy header and nav tabs, boxed panels, sidebar, striped progress bars
 - [x] 1v1 over WebRTC (PeerJS): room code and share link, host referees, same seeded cipher for both players
 - [x] Live rival progress bar, 3-2-1 countdown, best of 1/3/5, rematch, disconnect handling
 - [x] Practice (solo) mode
@@ -26,12 +27,13 @@ The biggest risk today is that some pairs of players can't connect at all.
 
 ## v0.3: Polish and feel
 
-- [ ] Sound effects: typewriter clacks, a bell on solve, and a mute toggle
+- [ ] Sound effects: key clicks, a "ding!" on solve, and a mute toggle
 - [ ] Short chat or canned taunts ("Close!", "Well played")
-- [ ] Solved-word animation and a newspaper "EXTRA!" banner for match wins
+- [ ] Solved-word animation and a flashy "WINNER!" banner for match wins
 - [ ] Better mobile input: a hidden text field for the native keyboard, and larger touch targets
 - [ ] Accessibility: screen-reader labels for cells, high-contrast theme, keyboard focus outlines
-- [ ] "Night edition" dark theme
+- [ ] Dark theme
+- [ ] Optional "hint vote" setting for the host: always allow, require agreement (the default), or no hints
 - [ ] Show the loser how far they got (percentage and time) on the round summary
 
 ## v0.4: More puzzles and modes

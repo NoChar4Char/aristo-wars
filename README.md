@@ -1,6 +1,6 @@
 # Aristo Wars
 
-A head-to-head cryptogram duel in an old newspaper style. Two players get the
+A head-to-head cryptogram duel with a late-2000s puzzle-site look. Two players get the
 same substitution cipher of a famous quotation and race to crack it. Mechanics
 follow the classic Puzzle Baron cryptogram: click a cell, type a letter, and it
 fills every matching code letter. There's also a Letters Remaining strip, a
@@ -17,8 +17,11 @@ GitHub Pages as is.
 - **Practice Alone**: solo mode with a timer.
 
 Matches are a single puzzle, best of 3, or best of 5. Difficulty sets how many
-letters start filled in (Easy 4, Medium 2, Hard 0). Each player has 3 hints per
-puzzle, and each hint freezes their board for 10 seconds.
+letters start filled in (Easy 4, Medium 2, Hard 0).
+
+**Hints:** either player can propose a hint at any time. If the other player
+agrees, the host picks a letter and it's revealed on *both* boards, so a hint
+never favors one side. In practice mode, hints are free and unlimited.
 
 ## Deploy to GitHub Pages
 
@@ -55,7 +58,7 @@ its details to `ICE_SERVERS` in `js/net.js`.
 | File | Purpose |
 | --- | --- |
 | `index.html` | Page layout: lobby, waiting room, game |
-| `css/style.css` | Newspaper styling |
+| `css/style.css` | Web 2.0 styling |
 | `js/quotes.js` | Quote bank (add more here) |
 | `js/puzzle.js` | Seeded cipher and puzzle generation |
 | `js/net.js` | PeerJS connection, plus the `?local` test transport |

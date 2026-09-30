@@ -3,144 +3,197 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Aristo Wars</title>
-  <meta name="description" content="A head-to-head cryptogram duel. Crack the same quote as your opponent — first to solve wins.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Special+Elite&family=UnifrakturMaguntia&display=swap" rel="stylesheet">
+  <title>AristoWars - Online Cryptogram Duels!</title>
+  <meta name="description" content="Challenge a friend to a head-to-head cryptogram duel. Same puzzle, same cipher: first to crack it wins!">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div id="page">
-    <header id="masthead">
-      <div class="rule-top"><span>Vol. I</span><span>A Cryptogram Duel</span><span>Price: Free</span></div>
-      <h1>Aristo Wars</h1>
-      <div class="rule-bottom">Two solvers &middot; One cipher &middot; First to crack it wins</div>
+  <div id="wrap">
+    <header id="header">
+      <a href="./" id="logo">Aristo<span>Wars</span><sup>beta</sup></a>
+      <div id="tagline">The Web's Premier <b>Cryptogram Showdown!</b></div>
     </header>
+    <nav id="nav">
+      <a href="./" class="on">Play Online</a>
+      <a href="#" id="nav-practice">Practice</a>
+      <a href="#rules" id="nav-rules">How to Play</a>
+      <a href="https://github.com/NoChar4Char/aristo-wars/issues" target="_blank" rel="noopener">Report a Bug</a>
+    </nav>
 
-    <!-- LOBBY -->
-    <section id="lobby" class="screen">
-      <div class="columns">
-        <div class="col">
-          <h2>Challenge a Rival</h2>
-          <label>Your name
-            <input id="name" maxlength="16" placeholder="Solver" autocomplete="off">
-          </label>
-          <fieldset>
-            <legend>New room</legend>
-            <label>Difficulty
+    <main id="content">
+      <!-- LOBBY -->
+      <section id="lobby" class="screen">
+        <div class="welcome">
+          <b>Welcome to AristoWars!</b> Challenge a friend to crack the same secret quote. First one to solve it wins. It's free, and there's nothing to sign up for!
+        </div>
+
+        <div class="grid2">
+          <div class="box">
+            <div class="box-h">Step 1: Pick a Name</div>
+            <div class="box-b">
+              <label for="name">Screen name:</label>
+              <input id="name" maxlength="16" placeholder="CipherKing99" autocomplete="off">
+            </div>
+          </div>
+
+          <div class="box">
+            <div class="box-h">Just Want to Practice?</div>
+            <div class="box-b">
+              <p class="small">Solve puzzles on your own with a timer. Uses the difficulty picked below.</p>
+              <button id="btn-solo" class="btn btn-gray">Practice Solo &raquo;</button>
+            </div>
+          </div>
+
+          <div class="box">
+            <div class="box-h">Step 2a: Host a Game</div>
+            <div class="box-b">
+              <label for="difficulty">Difficulty:</label>
               <select id="difficulty">
                 <option value="easy">Easy (4 letters given)</option>
                 <option value="medium" selected>Medium (2 letters given)</option>
                 <option value="hard">Hard (no letters given)</option>
               </select>
-            </label>
-            <label>Match length
+              <label for="rounds">Match length:</label>
               <select id="rounds">
                 <option value="1">Single puzzle</option>
                 <option value="3" selected>Best of 3</option>
                 <option value="5">Best of 5</option>
               </select>
-            </label>
-            <button id="btn-host">Open a Room</button>
-          </fieldset>
-          <fieldset>
-            <legend>Join a room</legend>
-            <label>Room code
+              <button id="btn-host" class="btn btn-green">Create Room!</button>
+            </div>
+          </div>
+
+          <div class="box">
+            <div class="box-h">Step 2b: Join a Friend</div>
+            <div class="box-b">
+              <label for="join-code">Room code:</label>
               <input id="join-code" maxlength="4" placeholder="ABCD" autocomplete="off" class="code-input">
-            </label>
-            <button id="btn-join">Join Room</button>
-          </fieldset>
-          <p class="or">&mdash; or &mdash;</p>
-          <button id="btn-solo" class="secondary">Practice Alone</button>
-          <p id="lobby-msg" class="msg"></p>
+              <button id="btn-join" class="btn btn-blue">Join Room &raquo;</button>
+              <p class="small">Got a link from a friend? Just open it and the code fills in for you.</p>
+            </div>
+          </div>
         </div>
-        <div class="col rules">
-          <h2>How to Play</h2>
-          <p>Each puzzle is a famous quotation. Every letter has been swapped for a different letter, and the same swap is used all the way through. If <b>X</b> stands for <b>E</b> once, it stands for <b>E</b> everywhere.</p>
-          <ul>
-            <li>Click a letter and type your guess. Every copy of that code letter fills in at once.</li>
-            <li><b>Backspace</b>, <b>Delete</b> or <b>Space</b> clears a letter. Use the <b>arrow keys</b> to move around.</li>
-            <li><b>Letters Remaining</b> shows which answer letters you haven't used yet.</li>
-            <li>Tick <i>Show letter frequencies</i> to see how often each code letter appears. <b>E</b>, <b>T</b>, <b>A</b> and <b>O</b> are the most common letters in English.</li>
-            <li>You get <b>3 hints</b> per puzzle. Each hint reveals one letter but freezes your board for 10 seconds.</li>
-          </ul>
-          <p>In a duel, both players get the <i>same</i> cipher. You can see how far along your rival is, but not their letters. Whoever solves it first wins the round.</p>
+        <p id="lobby-msg" class="msg"></p>
+
+        <div class="box" id="rules">
+          <div class="box-h">How to Play</div>
+          <div class="box-b">
+            <p>Each puzzle is a famous quote where every letter has been swapped for another letter. The same swap is used all the way through, so if <b>X</b> means <b>E</b> once, it means <b>E</b> everywhere.</p>
+            <ul>
+              <li>Click a box and type a letter. Every box with the same code letter fills in at once.</li>
+              <li><b>Backspace</b>, <b>Delete</b> or <b>Space</b> clears a letter. The <b>arrow keys</b> move you around.</li>
+              <li><b>Letters Remaining</b> shows which answer letters you haven't used yet.</li>
+              <li>Turn on <i>Letter Frequencies</i> to see how often each code letter appears. Tip: <b>E, T, A, O</b> are the most common letters in English!</li>
+              <li><b>Hints:</b> either player can propose one at any time. If your rival agrees, one letter is revealed on <u>both</u> boards.</li>
+            </ul>
+            <p>You'll both get the <i>exact same</i> cipher. You can watch your rival's progress bar, but not their letters.</p>
+          </div>
         </div>
+      </section>
+
+      <!-- WAITING ROOM -->
+      <section id="waiting" class="screen hidden">
+        <div class="box narrow">
+          <div class="box-h">Your Room is Ready!</div>
+          <div class="box-b center">
+            <p>Tell your friend this room code:</p>
+            <div id="room-code" class="big-code">....</div>
+            <p>&hellip;or send them this link:</p>
+            <div class="link-row">
+              <input id="room-link" readonly>
+              <button id="btn-copy" class="btn btn-blue">Copy</button>
+            </div>
+            <p class="msg" id="wait-msg"><span class="spinner"></span> Waiting for an opponent to join&hellip;</p>
+            <button id="btn-cancel" class="btn btn-gray">Cancel</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- GAME -->
+      <section id="game" class="screen hidden">
+        <div class="game-grid">
+          <div class="game-main">
+            <table id="scoreboard">
+              <tr>
+                <td class="me"><span id="me-name">You</span><b id="me-score">0</b></td>
+                <td class="mid">
+                  <div id="round-label">Practice</div>
+                  <div id="timer">0:00</div>
+                </td>
+                <td class="opp"><b id="opp-score">0</b><span id="opp-name">Rival</span></td>
+              </tr>
+            </table>
+
+            <div id="progress" class="duel-only">
+              <div class="bar"><span>You</span><div class="track"><div id="me-bar" class="fill"></div></div><em id="me-pct">0%</em></div>
+              <div class="bar"><span>Rival</span><div class="track"><div id="opp-bar" class="fill opp"></div></div><em id="opp-pct">0%</em></div>
+            </div>
+
+            <div id="hint-prompt" class="notice hidden">
+              <span id="hint-prompt-text"></span>
+              <span class="notice-btns">
+                <button id="btn-hint-yes" class="btn btn-green btn-sm">Agree</button>
+                <button id="btn-hint-no" class="btn btn-gray btn-sm">Decline</button>
+              </span>
+            </div>
+
+            <div id="puzzle-box">
+              <div id="board" aria-label="Cryptogram"></div>
+              <div id="source"></div>
+            </div>
+
+            <div id="status" class="msg"></div>
+
+            <div id="controls">
+              <button id="btn-hint" class="btn btn-orange">Propose a Hint</button>
+              <button id="btn-giveup" class="btn btn-gray">Give Up</button>
+              <label class="check"><input type="checkbox" id="opt-freq"> Letter frequencies</label>
+              <label class="check"><input type="checkbox" id="opt-kbd"> On-screen keyboard</label>
+            </div>
+
+            <div id="kbd" class="hidden"></div>
+
+            <div id="result" class="hidden">
+              <h2 id="result-title"></h2>
+              <p id="result-text"></p>
+              <div id="result-buttons"></div>
+            </div>
+          </div>
+
+          <aside class="game-side">
+            <div class="box">
+              <div class="box-h">Letters Remaining</div>
+              <div class="box-b"><div id="remaining"></div></div>
+            </div>
+            <div class="box hidden" id="freq-panel">
+              <div class="box-h">Letter Frequencies</div>
+              <div class="box-b"><div id="freq"></div></div>
+            </div>
+            <div class="box">
+              <div class="box-h">Quick Tips</div>
+              <div class="box-b small">
+                <p>Look for one-letter words: they're almost always <b>A</b> or <b>I</b>.</p>
+                <p>A common three-letter word is often <b>THE</b> or <b>AND</b>.</p>
+                <p>After an apostrophe, try <b>S</b>, <b>T</b> or <b>LL</b>.</p>
+              </div>
+            </div>
+            <p class="small"><a href="#" id="btn-leave">&laquo; Leave game</a></p>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <footer id="footer">
+      <div class="badges">
+        <span class="badge"><b>WebRTC</b>powered</span>
+        <span class="badge"><b>100%</b>free</span>
+        <span class="badge"><b>NO</b>ads</span>
       </div>
-    </section>
-
-    <!-- WAITING ROOM -->
-    <section id="waiting" class="screen hidden">
-      <h2>Room Open</h2>
-      <p>Give your rival this code:</p>
-      <div id="room-code" class="big-code">····</div>
-      <p>or send them this link:</p>
-      <div class="link-row">
-        <input id="room-link" readonly>
-        <button id="btn-copy">Copy</button>
-      </div>
-      <p class="msg" id="wait-msg">Waiting for an opponent to arrive&hellip;</p>
-      <button id="btn-cancel" class="secondary">Close Room</button>
-    </section>
-
-    <!-- GAME -->
-    <section id="game" class="screen hidden">
-      <table id="scoreboard">
-        <tr>
-          <td class="me"><span id="me-name">You</span> <b id="me-score">0</b></td>
-          <td class="mid">
-            <div id="round-label">Practice</div>
-            <div id="timer">0:00</div>
-          </td>
-          <td class="opp"><b id="opp-score">0</b> <span id="opp-name">Rival</span></td>
-        </tr>
-      </table>
-
-      <div id="progress" class="duel-only">
-        <div class="bar"><span>You</span><div class="track"><div id="me-bar" class="fill"></div></div><em id="me-pct">0%</em></div>
-        <div class="bar"><span>Rival</span><div class="track"><div id="opp-bar" class="fill opp"></div></div><em id="opp-pct">0%</em></div>
-      </div>
-
-      <div id="puzzle-box">
-        <div id="board" aria-label="Cryptogram"></div>
-        <div id="source"></div>
-      </div>
-
-      <div id="status" class="msg"></div>
-
-      <div id="controls">
-        <button id="btn-hint">Hint (3)</button>
-        <button id="btn-giveup" class="secondary">Give Up</button>
-        <label class="check"><input type="checkbox" id="opt-freq"> Show letter frequencies</label>
-        <label class="check"><input type="checkbox" id="opt-kbd"> Show on-screen keyboard</label>
-      </div>
-
-      <div id="kbd" class="hidden"></div>
-
-      <div class="panel">
-        <h3>Letters Remaining</h3>
-        <div id="remaining"></div>
-      </div>
-
-      <div class="panel hidden" id="freq-panel">
-        <h3>Letter Frequencies</h3>
-        <div id="freq"></div>
-      </div>
-
-      <div id="result" class="hidden">
-        <h2 id="result-title"></h2>
-        <p id="result-text"></p>
-        <div id="result-buttons"></div>
-      </div>
-
-      <p class="footer-links"><a href="#" id="btn-leave">&larr; Leave and return to the lobby</a></p>
-    </section>
-
-    <div id="overlay" class="hidden"><div id="overlay-text"></div></div>
-
-    <footer>Quotations are from the public record. Letters are yours to find.</footer>
+      &copy; 2026 AristoWars &middot; Best viewed at 1024&times;768 or higher
+    </footer>
   </div>
+
+  <div id="overlay" class="hidden"><div id="overlay-text"></div></div>
 
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <script src="js/quotes.js"></script>

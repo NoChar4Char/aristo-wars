@@ -1,20 +1,22 @@
 // Peer-to-peer link via PeerJS (WebRTC). The public PeerJS server only brokers
 // the introduction; game messages travel directly between the two browsers.
 //
-// Add ?local to the URL to link two tabs of the same browser with a
-// BroadcastChannel instead (handy for testing without a network).
+// Relay (TURN) servers are configured in js/config.js.
+//
+// Test flags:
+//   ?local  link two tabs of the same browser with a BroadcastChannel (no network)
+//   ?relay  force every connection through the TURN relay (to check it works)
 const Net = (() => {
   const PREFIX = "aristo-wars-";
   const LOCAL = new URLSearchParams(location.search).has("local");
-  // STUN finds each player's public address. Players behind strict NATs, VPNs or
-  // corporate firewalls also need a TURN relay: add one here, e.g.
-  // { urls: "turn:your.turn.host:3478", username: "user", credential: "pass" }
-  const ICE_SERVERS = [
+  const FORCE_RELAY = new URLSearchParams(location.search).has("relay");
+  // STUN finds each player's public address so most pairs connect directly.
+  const STUN = [
     { urls: "stun:stun.l.google.com:19302" },
     { urls: "stun:stun1.l.google.com:19302" },
   ];
-  const PEER_OPTS = { config: { iceServers: ICE_SERVERS } };
-  const CONNECT_TIMEOUT_MS = 15000;
+  const CONNECT_TIMEOUT_MS = 20000;
+  let relayCount = 0;
   const CODE_CHARS = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
   let peer = null, conn = null, h = {};
 
@@ -25,6 +27,29 @@ const Net = (() => {
   }
 
   function available() { return LOCAL || typeof Peer !== "undefined"; }
+
+  // STUN plus whatever TURN relays are configured. Metered credentials are
+  // fetched fresh each time, since they expire.
+  async function peerOptions() {
+    const cfg = typeof TURN_CONFIG === "object" ? TURN_CONFIG : {};
+    let turn = Array.isArray(cfg.servers) ? cfg.servers.slice() : [];
+    if (cfg.meteredApp && cfg.meteredApiKey) {
+      try {
+        const url = `https://${cfg.meteredApp}.metered.live/api/v1/turn/credentials?apiKey=${encodeURIComponent(cfg.meteredApiKey)}`;
+        const r = await fetch(url);
+        if (r.ok) turn = turn.concat(await r.json());
+        else console.warn("[AristoWars] TURN credentials request failed:", r.status);
+      } catch (e) {
+        console.warn("[AristoWars] TURN credentials request failed:", e);
+      }
+    }
+    relayCount = turn.length;
+    const config = { iceServers: STUN.concat(turn) };
+    if (FORCE_RELAY) config.iceTransportPolicy = "relay";
+    return { config };
+  }
+
+  function hasRelay() { return relayCount > 0; }
 
   // Minimal stand-in for a PeerJS DataConnection over BroadcastChannel.
   function localConn(code, isHost) {
@@ -65,7 +90,11 @@ const Net = (() => {
     h = handlers;
     const code = makeCode();
     if (LOCAL) { setTimeout(() => { h.ready && h.ready(code); wire(localConn(code, true)); }); return; }
-    peer = new Peer(PREFIX + code, PEER_OPTS);
+    peerOptions().then((opts) => startHost(code, opts, handlers));
+  }
+
+  function startHost(code, opts, handlers) {
+    peer = new Peer(PREFIX + code, opts);
     keepAlive(peer);
     peer.on("open", () => h.ready && h.ready(code));
     peer.on("connection", (c) => {
@@ -90,10 +119,12 @@ const Net = (() => {
     h.open = () => { clearTimeout(timer); done && done(); };
     h.error = (e) => { clearTimeout(timer); fail && fail(e); };
     if (LOCAL) { wire(localConn(code, false)); return; }
-    peer = new Peer(PEER_OPTS);
-    keepAlive(peer);
-    peer.on("open", () => wire(peer.connect(PREFIX + code, { reliable: true })));
-    peer.on("error", (e) => h.error && h.error(e));
+    peerOptions().then((opts) => {
+      peer = new Peer(opts);
+      keepAlive(peer);
+      peer.on("open", () => wire(peer.connect(PREFIX + code, { reliable: true })));
+      peer.on("error", (e) => h.error && h.error(e));
+    });
   }
 
   function send(msg) { if (conn && conn.open) conn.send(msg); }
@@ -104,5 +135,5 @@ const Net = (() => {
     conn = null; peer = null;
   }
 
-  return { available, host, join, send, leave };
+  return { available, hasRelay, host, join, send, leave };
 })();

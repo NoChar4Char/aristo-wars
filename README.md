@@ -50,9 +50,19 @@ two players. The host acts as referee: it picks the quote and a random seed,
 and both browsers build the identical cipher from them (`js/puzzle.js`). Only
 progress percentages and "solved" or "gave up" messages are exchanged.
 
-Players behind a VPN, a corporate firewall or a strict mobile NAT may fail to
-connect ("couldn't open a direct line"). The fix is a TURN relay server: add
-its details to `ICE_SERVERS` in `js/net.js`.
+Most pairs connect directly. Players behind a VPN, a corporate firewall or a
+strict mobile network need a **TURN relay**, which is set up in `js/config.js`:
+
+1. Sign up for free at <https://www.metered.ca/stun-turn> and create a TURN app.
+2. In `js/config.js`, set `meteredApp` to the app's subdomain (the `yourname`
+   part of `yourname.metered.live`) and `meteredApiKey` to its API key.
+
+To check the relay works, open the site with `?relay` on both sides. That
+forces every connection through the relay.
+
+When you change any JS or CSS file, bump the `?v=` number on the
+`<script>`/`<link>` tags in `index.html` so browsers don't keep using cached
+copies.
 
 ## Files
 
@@ -62,7 +72,8 @@ its details to `ICE_SERVERS` in `js/net.js`.
 | `css/style.css` | Web 2.0 styling |
 | `js/quotes.js` | Quote bank (add more here) |
 | `js/puzzle.js` | Seeded cipher and puzzle generation |
-| `js/net.js` | PeerJS connection, plus the `?local` test transport |
+| `js/config.js` | TURN relay settings |
+| `js/net.js` | PeerJS connection, plus the `?local` and `?relay` test flags |
 | `js/app.js` | Game board, input, match flow |
 
 See [ROADMAP.md](ROADMAP.md) for what's next.

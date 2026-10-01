@@ -110,7 +110,9 @@
       error(e) {
         $("#btn-join").disabled = false;
         const text = e.type === "peer-unavailable" ? `No open room with code ${code}.`
-          : e.type === "timeout" ? "Found the room but couldn't open a direct line to it. A VPN or strict firewall on either side is the usual cause. Try turning it off, or use a different network."
+          : e.type === "timeout" ? (Net.hasRelay()
+            ? "Found the room but couldn't connect, even through the relay. Check your internet connection and try again."
+            : "Found the room but couldn't open a direct line to it. A VPN or strict firewall on either side is the usual cause. Try turning it off, or use a different network.")
           : "Connection trouble: " + (e.type || e.message || e);
         if (S.puzzle) status(text, "bad"); else setMsg($("#lobby-msg"), text, "bad");
       },

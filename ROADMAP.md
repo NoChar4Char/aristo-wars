@@ -12,6 +12,7 @@ backend only when a feature truly needs shared, persistent state.
 - [x] Letter-frequency table (2 rows × 27 columns) under the puzzle, and a sidebar chart of English letter frequencies
 - [x] Hints by mutual agreement: either player proposes at any time, and if the other agrees, the same letter is revealed on both boards (free in practice mode)
 - [x] Late-2000s "Web 2.0" look: glossy header and nav tabs, boxed panels, sidebar, striped progress bars
+- [x] Built on Bootstrap 5, with separate pages for the lobby, game and rules (the back button works)
 - [x] 1v1 over WebRTC (PeerJS): room code and share link, host referees, same seeded cipher for both players
 - [x] Live rival progress bar, 3-2-1 countdown, best of 1/3/5, rematch, disconnect handling
 - [x] Practice (solo) mode
@@ -21,7 +22,8 @@ backend only when a feature truly needs shared, persistent state.
 
 The biggest risk today is that some pairs of players can't connect at all.
 
-- [ ] Add a TURN relay to `ICE_SERVERS` (for example, the Metered or Twilio free tiers, or a self-hosted coturn). Keep credentials short-lived if possible.
+- [x] TURN relay (Metered) configured in `js/config.js`, so players can connect from any network
+- [ ] Switch to short-lived relay credentials (Metered's credentials API) instead of the static login
 - [ ] Rejoin after a dropped connection: keep the room code and restore the round state from the host
 - [ ] A connection-status light and a ping indicator in the scoreboard
 - [ ] Optional fallback: relay game messages through Firebase Realtime Database or Supabase Realtime when WebRTC fails

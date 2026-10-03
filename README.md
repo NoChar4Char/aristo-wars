@@ -8,8 +8,12 @@ letter-frequency table under the puzzle, a reference chart of English letter
 frequencies, an on-screen keyboard, and the quote's source shown in
 the clear.
 
-No build step and no backend. It's plain HTML, CSS and JavaScript, so it runs on
-GitHub Pages as is.
+No build step and no backend. It's plain HTML, CSS and JavaScript with
+[Bootstrap 5](https://getbootstrap.com) from a CDN, so it runs on GitHub Pages as is.
+
+The lobby, the game and the rules are separate pages, so the browser's back
+button works as expected. The waiting room lives on the game page because the
+connection to your opponent only lasts while that page is open.
 
 ## Play
 
@@ -40,7 +44,7 @@ python3 -m http.server 8000
 
 To test a duel on one machine without any networking, add `?local` to the URL
 in two tabs: `http://localhost:8000/?local` to host, and the share link it
-shows to join.
+shows to join. The flag follows you from page to page.
 
 ## How the multiplayer works
 
@@ -61,19 +65,23 @@ To check the relay works, open the site with `?relay` on both sides. That
 forces every connection through the relay.
 
 When you change any JS or CSS file, bump the `?v=` number on the
-`<script>`/`<link>` tags in `index.html` so browsers don't keep using cached
-copies.
+`<script>`/`<link>` tags in all three HTML pages so browsers don't keep using
+cached copies.
 
 ## Files
 
 | File | Purpose |
 | --- | --- |
-| `index.html` | Page layout: lobby, waiting room, game |
-| `css/style.css` | Web 2.0 styling |
+| `index.html` | Lobby: name, host a room, join a room, practice |
+| `play.html` | Waiting room and the game (`?mode=host`, `?mode=join&room=CODE`, `?mode=practice`) |
+| `how-to-play.html` | Rules |
+| `css/style.css` | Web 2.0 theme on top of Bootstrap, plus the puzzle board |
+| `js/common.js` | Shared helpers: links that keep test flags, saved screen name |
+| `js/lobby.js` | Lobby page logic |
+| `js/game.js` | Game board, input, match flow |
 | `js/quotes.js` | Quote bank (add more here) |
 | `js/puzzle.js` | Seeded cipher and puzzle generation |
 | `js/config.js` | TURN relay settings |
 | `js/net.js` | PeerJS connection, plus the `?local` and `?relay` test flags |
-| `js/app.js` | Game board, input, match flow |
 
 See [ROADMAP.md](ROADMAP.md) for what's next.

@@ -1,3 +1,6 @@
+// Game page (play.html): waiting room, joining, and the match itself.
+// The page's URL says what to do: ?mode=host&rounds=3, ?mode=join&room=CODE,
+// or ?mode=practice. The peer connection lives only as long as this page.
 (() => {
   const $ = (s) => document.querySelector(s);
 
@@ -26,62 +29,36 @@
 
   function setMsg(el, text, kind) {
     el.textContent = text || "";
-    el.className = "msg" + (kind ? " " + kind : "");
+    el.className = !text ? "msg"
+      : kind ? `msg alert alert-${kind === "bad" ? "danger" : "success"} py-1 px-2 small`
+      : "msg small text-secondary";
   }
   const status = (t, k) => setMsg($("#status"), t, k);
 
-  // ---------------------------------------------------------------- lobby
-  function readName() {
-    const n = $("#name").value.trim().slice(0, 16) || "Solver";
-    try { localStorage.setItem("aw-name", n); } catch (_) {}
-    return n;
-  }
-
-  function initLobby() {
-    try { $("#name").value = localStorage.getItem("aw-name") || ""; } catch (_) {}
-    const room = new URLSearchParams(location.search).get("room");
-    if (room) $("#join-code").value = room.toUpperCase().slice(0, 4);
-
-    $("#btn-solo").onclick = startSolo;
-    $("#nav-practice").onclick = (e) => {
-      e.preventDefault();
-      if (!$("#lobby").classList.contains("hidden")) startSolo();
-    };
-    $("#btn-host").onclick = hostRoom;
-    $("#btn-join").onclick = joinRoom;
-    $("#join-code").addEventListener("keydown", (e) => { if (e.key === "Enter") joinRoom(); });
-    $("#btn-cancel").onclick = backToLobby;
-    $("#btn-leave").onclick = (e) => { e.preventDefault(); backToLobby(); };
-    $("#btn-copy").onclick = () => {
-      const inp = $("#room-link");
-      inp.select();
-      (navigator.clipboard ? navigator.clipboard.writeText(inp.value) : Promise.reject())
-        .then(() => ($("#btn-copy").textContent = "Copied"))
-        .catch(() => document.execCommand("copy"));
-    };
-  }
-
+  // ---------------------------------------------------------------- page start
   function backToLobby() {
     Net.leave();
-    location.href = location.pathname + (new URLSearchParams(location.search).has("local") ? "?local" : ""); // clean reload
+    location.replace(AW.link("index.html"));
   }
 
-  function needNet() {
+  function needNet(el) {
     if (Net.available()) return true;
-    setMsg($("#lobby-msg"), "Couldn't load the networking library. Check your connection and reload the page.", "bad");
+    el.innerHTML = "";
+    setMsg(el, "Couldn't load the networking library. Check your connection and reload the page.", "bad");
     return false;
   }
 
   function hostRoom() {
-    if (!needNet()) return;
-    S.mode = "duel"; S.role = "host"; S.myName = readName();
-    S.settings = { rounds: +$("#rounds").value };
-    setMsg($("#lobby-msg"), "Opening a room…");
+    S.mode = "duel"; S.role = "host";
+    const r = +AW.params.get("rounds");
+    S.settings = { rounds: [1, 3, 5].includes(r) ? r : 3 };
+    show("waiting");
+    if (!needNet($("#wait-msg"))) return;
     Net.host({
       ready(code) {
-        show("waiting");
         $("#room-code").textContent = code;
-        $("#room-link").value = `${location.origin}${location.pathname}?${new URLSearchParams(location.search).has("local") ? "local&" : ""}room=${code}`;
+        $("#room-link").value = new URL(AW.link("index.html", { room: code }), location.href).href;
+        $("#wait-msg").innerHTML = '<span class="spinner-border spinner-border-sm text-primary me-1"></span> Waiting for an opponent to join…';
       },
       open() {
         setMsg($("#wait-msg"), "A rival approaches…", "good");
@@ -91,36 +68,41 @@
       close: onDisconnect,
       error(e) {
         const text = "Connection trouble: " + (e.type || e.message || e);
-        if (S.puzzle) status(text, "bad"); else setMsg($("#lobby-msg"), text, "bad");
+        setMsg(S.puzzle ? $("#status") : $("#wait-msg"), text, "bad");
       },
     });
   }
 
   function joinRoom() {
-    if (!needNet()) return;
-    const code = $("#join-code").value.trim().toUpperCase();
-    if (code.length !== 4) return setMsg($("#lobby-msg"), "Room codes are 4 characters.", "bad");
-    S.mode = "duel"; S.role = "guest"; S.myName = readName();
-    setMsg($("#lobby-msg"), `Knocking on room ${code}…`);
-    $("#btn-join").disabled = true;
+    S.mode = "duel"; S.role = "guest";
+    const code = (AW.params.get("room") || "").toUpperCase();
+    show("joining");
+    $("#join-room").textContent = code;
+    $("#btn-back-lobby").href = AW.link("index.html", { room: code });
+    if (!needNet($("#join-msg"))) return;
+    if (!/^[A-Z0-9]{4}$/.test(code)) return setMsg($("#join-msg"), "That room code doesn't look right.", "bad");
     Net.join(code, {
       open() { Net.send({ t: "hello", name: S.myName }); },
       data: onMessage,
       close: onDisconnect,
       error(e) {
-        $("#btn-join").disabled = false;
         const text = e.type === "peer-unavailable" ? `No open room with code ${code}.`
           : e.type === "timeout" ? (Net.hasRelay()
             ? "Found the room but couldn't connect, even through the relay. Check your internet connection and try again."
             : "Found the room but couldn't open a direct line to it. A VPN or strict firewall on either side is the usual cause. Try turning it off, or use a different network.")
           : "Connection trouble: " + (e.type || e.message || e);
-        if (S.puzzle) status(text, "bad"); else setMsg($("#lobby-msg"), text, "bad");
+        setMsg(S.puzzle ? $("#status") : $("#join-msg"), text, "bad");
       },
     });
   }
 
   function onDisconnect() {
     if (S.mode !== "duel") return;
+    if (!S.puzzle) { // left before the match started
+      if (S.role === "host") $("#wait-msg").innerHTML = '<span class="spinner-border spinner-border-sm text-primary me-1"></span> Your opponent left. Waiting for someone else…';
+      else setMsg($("#join-msg"), "The host closed the room.", "bad");
+      return;
+    }
     stopTimer();
     S.active = false;
     showResult("Opponent Disconnected", `${S.oppName} has left the room.`, [["Back to Lobby", backToLobby]]);
@@ -135,8 +117,7 @@
         else startMatch();
         break;
       case "full":
-        setMsg($("#lobby-msg"), "That room already has two players.", "bad");
-        $("#btn-join").disabled = false;
+        setMsg($("#join-msg"), "That room already has two players.", "bad");
         break;
       case "round":
         beginRound(m);
@@ -240,7 +221,7 @@
 
   // ---------------------------------------------------------------- solo
   function startSolo() {
-    S.mode = "solo"; S.role = "host"; S.myName = readName();
+    S.mode = "solo"; S.role = "host";
     S.settings = { rounds: 1 };
     document.body.classList.add("solo");
     nextRound();
@@ -544,7 +525,7 @@
     buttons.forEach(([label, fn], i) => {
       const b = document.createElement("button");
       const quiet = /leave|lobby/i.test(label);
-      b.className = "btn " + (quiet ? "btn-gray" : i === 0 ? "btn-green btn-big" : "btn-blue");
+      b.className = "btn " + (quiet ? "btn-light border" : i === 0 ? "btn-success btn-lg aw-pulse" : "btn-primary");
       b.textContent = label;
       b.onclick = fn;
       box.appendChild(b);
@@ -558,16 +539,17 @@
     const kbd = $("#kbd");
     for (const row of ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"]) {
       const r = document.createElement("div");
-      r.className = "row";
+      r.className = "kbd-row";
       for (const l of row) {
         const b = document.createElement("button");
+        b.className = "btn btn-light border";
         b.textContent = l;
         b.onclick = () => assign(l);
         r.appendChild(b);
       }
       if (row === "ZXCVBNM") {
         const b = document.createElement("button");
-        b.className = "wide"; b.textContent = "⌫";
+        b.className = "btn btn-light border wide"; b.textContent = "⌫";
         b.onclick = clearCurrent;
         r.appendChild(b);
       }
@@ -598,6 +580,34 @@
     });
   }
 
-  initLobby();
+  function initPageControls() {
+    for (const el of document.querySelectorAll(".js-leave")) {
+      el.onclick = (e) => { e.preventDefault(); backToLobby(); };
+    }
+    $("#btn-copy").onclick = () => {
+      const inp = $("#room-link");
+      inp.select();
+      (navigator.clipboard ? navigator.clipboard.writeText(inp.value) : Promise.reject())
+        .then(() => ($("#btn-copy").textContent = "Copied!"))
+        .catch(() => document.execCommand("copy"));
+    };
+    // Leaving the page (back button, closing the tab) ends the connection
+    // right away so the opponent is told.
+    addEventListener("pagehide", () => Net.leave());
+  }
+
   initGameControls();
+  initPageControls();
+
+  const mode = AW.params.get("mode");
+  S.myName = AW.getName() || (mode === "join" ? "Guest" : "Solver");
+  if (mode === "host" || mode === "join") {
+    $('.aw-nav a[data-page="index.html"]').classList.add("active");
+    if (mode === "host") hostRoom(); else joinRoom();
+  }
+  else {
+    $("#nav-practice").classList.add("active");
+    document.title = "Practice - AristoWars";
+    startSolo();
+  }
 })();

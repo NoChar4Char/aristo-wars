@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Play - AristoWars</title>
+  <meta name="description" content="A head-to-head cryptogram duel in progress.">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=6">
+</head>
+<body>
+  <div class="aw-wrap container-fluid px-0">
+    <header class="aw-header d-flex align-items-center justify-content-between px-4">
+      <a href="index.html" data-page="index.html" class="aw-logo">Aristo<span>Wars</span><sup>beta</sup></a>
+      <div class="aw-tagline d-none d-md-block">The Web's Premier <b>Cryptogram Showdown!</b></div>
+    </header>
+    <nav class="navbar navbar-expand navbar-dark aw-nav py-0">
+      <ul class="navbar-nav flex-wrap">
+        <li class="nav-item"><a class="nav-link" href="index.html" data-page="index.html">Play Online</a></li>
+        <li class="nav-item"><a class="nav-link" id="nav-practice" href="play.html?mode=practice" data-page="play.html" data-mode="practice">Practice</a></li>
+        <li class="nav-item"><a class="nav-link" href="how-to-play.html" data-page="how-to-play.html">How to Play</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://github.com/NoChar4Char/aristo-wars/issues" target="_blank" rel="noopener">Report a Bug</a></li>
+      </ul>
+    </nav>
+    <main class="aw-content p-3 p-md-4">
+      <!-- HOST: WAITING ROOM -->
+      <section id="waiting" class="screen hidden">
+        <div class="card mx-auto aw-narrow">
+          <div class="card-header">Your Room is Ready!</div>
+          <div class="card-body text-center">
+            <p>Tell your friend this room code:</p>
+            <div id="room-code" class="aw-big-code">....</div>
+            <p>&hellip;or send them this link:</p>
+            <div class="input-group mb-3">
+              <input id="room-link" class="form-control form-control-sm" readonly>
+              <button id="btn-copy" class="btn btn-primary">Copy</button>
+            </div>
+            <p class="small text-secondary" id="wait-msg"><span class="spinner-border spinner-border-sm text-primary me-1"></span> Opening a room&hellip;</p>
+            <button class="btn btn-light border js-leave">Cancel</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- GUEST: JOINING -->
+      <section id="joining" class="screen hidden">
+        <div class="card mx-auto aw-narrow">
+          <div class="card-header">Joining Room <span id="join-room"></span></div>
+          <div class="card-body text-center">
+            <p id="join-msg" class="mb-3"><span class="spinner-border spinner-border-sm text-primary me-1"></span> Knocking on the door&hellip;</p>
+            <a id="btn-back-lobby" href="index.html" class="btn btn-light border">&laquo; Back to Lobby</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- GAME -->
+      <section id="game" class="screen hidden">
+        <div class="row g-3">
+          <div class="col-lg-9">
+            <div id="scoreboard" class="aw-scoreboard d-flex align-items-center justify-content-between px-3 py-2 mb-2">
+              <div class="me"><span id="me-name">You</span><b id="me-score">0</b></div>
+              <div class="text-center">
+                <div id="round-label">Practice</div>
+                <div id="timer">0:00</div>
+              </div>
+              <div class="opp"><b id="opp-score">0</b><span id="opp-name">Rival</span></div>
+            </div>
+
+            <div id="progress" class="row g-2 mb-2 small fw-bold duel-only">
+              <div class="col-md-6 d-flex align-items-center gap-2">
+                <span class="aw-bar-label">You</span>
+                <div class="progress flex-grow-1"><div id="me-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="width:0%"></div></div>
+                <em id="me-pct">0%</em>
+              </div>
+              <div class="col-md-6 d-flex align-items-center gap-2">
+                <span class="aw-bar-label">Rival</span>
+                <div class="progress flex-grow-1"><div id="opp-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-danger" style="width:0%"></div></div>
+                <em id="opp-pct">0%</em>
+              </div>
+            </div>
+
+            <div id="hint-prompt" class="alert alert-warning fw-bold aw-flash py-2 hidden">
+              <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <span id="hint-prompt-text"></span>
+                <span>
+                  <button id="btn-hint-yes" class="btn btn-success btn-sm">Agree</button>
+                  <button id="btn-hint-no" class="btn btn-light border btn-sm">Decline</button>
+                </span>
+              </div>
+            </div>
+
+            <div id="puzzle-box" class="card">
+              <div class="card-body">
+                <div id="board" aria-label="Cryptogram"></div>
+                <div id="source"></div>
+              </div>
+            </div>
+
+            <div class="card mt-2">
+              <div class="card-header">Letter Frequency</div>
+              <div class="table-responsive">
+                <table id="freq" class="table table-bordered table-sm text-center mb-0"></table>
+              </div>
+            </div>
+
+            <div id="status" class="msg"></div>
+
+            <div id="controls" class="d-flex flex-wrap align-items-center gap-2 mb-3">
+              <button id="btn-hint" class="btn btn-warning">Propose a Hint</button>
+              <button id="btn-giveup" class="btn btn-light border">Give Up</button>
+              <div class="form-check form-switch ms-2 mb-0">
+                <input class="form-check-input" type="checkbox" role="switch" id="opt-kbd">
+                <label class="form-check-label small" for="opt-kbd">On-screen keyboard</label>
+              </div>
+            </div>
+
+            <div id="kbd" class="hidden"></div>
+
+            <div id="result" class="alert alert-warning text-center aw-result hidden">
+              <h2 id="result-title" class="h4"></h2>
+              <p id="result-text" class="mb-0"></p>
+              <div id="result-buttons" class="d-flex flex-wrap justify-content-center align-items-center gap-2 mt-3"></div>
+            </div>
+          </div>
+
+          <aside class="col-lg-3">
+            <div class="card mb-3">
+              <div class="card-header">Letters Remaining</div>
+              <div class="card-body p-2"><div id="remaining"></div></div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-header">Frequency Table of English Letters</div>
+              <div class="card-body p-2">
+                <p class="small text-secondary mb-2">How often each letter shows up in typical English text. Match them against the puzzle's most common code letters.</p>
+                <ol id="eng-freq" class="list-unstyled mb-0">
+                <li class="d-flex align-items-center gap-2"><b>E</b><div class="progress flex-grow-1" role="progressbar" aria-label="E" aria-valuenow="12.7" aria-valuemin="0" aria-valuemax="12.7"><div class="progress-bar" style="width:100%"></div></div><small>12.7%</small></li>
+                <li class="d-flex align-items-center gap-2"><b>T</b><div class="progress flex-grow-1" role="progressbar" aria-label="T" aria-valuenow="9.1" aria-valuemin="0" aria-valuemax="12.7"><div class="progress-bar" style="width:72%"></div></div><small>9.1%</small></li>
+                <li class="d-flex align-items-center gap-2"><b>A</b><div class="progress flex-grow-1" role="progressbar" aria-label="A" aria-valuenow="8.2" aria-valuemin="0" aria-valuemax="12.7"><div class="progress-bar" style="width:65%"></div></div><small>8.2%</small></li>
+                <li class="d-flex align-items-center gap-2"><b>O</b><div class="progress flex-grow-1" role="progressbar" aria-label="O" aria-valuenow="7.5" aria-valuemin="0" aria-valuemax="12.7"><div class="progress-bar" style="width:59%"></div></div><small>7.5%</small></li>
+                <li class="d-flex align-items-center gap-2"><b>I</b><div class="progress flex-grow-1" role="progressbar" aria-label="I" aria-valuenow="7.0" aria-valuemin="0" aria-valuemax="12.7"><div class="progress-bar" style="width:55%"></div></div><small>7.0%</small></li>
+                <li class="d-flex align-items-center gap-2"><b>N</b><div class="progress flex-grow-1" role="progressbar" aria-label="N" aria-valuenow="6.7" aria-valuemin="0" aria-valuemax="12.7"><div class="progress-bar" style="width:53%"></div></div><small>6.7%</small></li>
+                <li class="d-flex align-items-center gap-2"><b>S</b><div class="progress flex-grow-1" role="progressbar" aria-label="S" aria-valuenow="6.3" aria-valuemin="0" aria-valuemax="12.7"><div class="progress-bar" style="width:50%"></div></div><small>6.3%</small></li>
+                <li class="d-flex align-items-center gap-2"><b>H</b><div class="progress flex-grow-1" role="progressbar" aria-label="H" aria-valuenow="6.1" aria-valuemin="0" aria-valuemax="12.7"><div class="progress-bar" style="width:48%"></div></div><small>6.1%</small></li>
+                <li class="d-flex align-items-center gap-2"><b>R</b><div class="progress flex-grow-1" role="progressbar" aria-label="R" aria-valuenow="6.0" aria-valuemin="0" aria-valuemax="12.7"><div class="progress-bar" style="width:47%"></div></div><small>6.0%</small></li>
+                <li class="d-flex align-items-center gap-2"><b>D</b><div class="progress flex-grow-1" role="progressbar" aria-label="D" aria-valuenow="4.3" aria-valuemin="0" aria-valuemax="12.7"><div class="progress-bar" style="width:34%"></div></div><small>4.3%</small></li>
+                <li class="d-flex align-items-center gap-2"><b>L</b><div class="progress flex-grow-1" role="progressbar" aria-label="L" aria-valuenow="4.0" aria-valuemin="0" aria-valuemax="12.7"><div class="progress-bar" style="width:31%"></div></div><small>4.0%</small></li>
+                <li class="d-flex align-items-center gap-2"><b>C</b><div class="progress flex-grow-1" role="progressbar" aria-label="C" aria-valuenow="2.8" aria-valuemin="0" aria-valuemax="12.7"><div class="progress-bar" style="width:22%"></div></div><small>2.8%</small></li>
+                </ol>
+              </div>
+            </div>
+            <a href="index.html" class="small js-leave">&laquo; Leave game</a>
+          </aside>
+        </div>
+      </section>
+
+      <div id="overlay" class="hidden"><div id="overlay-text"></div></div>
+    </main>
+    <footer class="aw-footer text-center small text-secondary py-3">
+      <div class="mb-1"><span class="aw-badge"><b>WebRTC</b>powered</span></div>
+      &copy; 2026 AristoWars &middot; Best viewed at 1024&times;768 or higher
+    </footer>
+  </div>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script src="js/common.js?v=6"></script>
+  <script src="js/quotes.js?v=6"></script>
+  <script src="js/puzzle.js?v=6"></script>
+  <script src="js/config.js?v=6"></script>
+  <script src="js/net.js?v=6"></script>
+  <script src="js/game.js?v=6"></script>
+</body>
+</html>

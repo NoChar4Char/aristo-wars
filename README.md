@@ -1,7 +1,8 @@
 # Aristo Wars
 
-A head-to-head cryptogram duel with a late-2000s puzzle-site look. Two players get the
-same substitution cipher of a famous quotation and race to crack it. Mechanics
+A multiplayer cryptogram race with a late-2000s puzzle-site look. Up to six
+players get the same substitution cipher of a famous quotation and race to
+crack it. Mechanics
 follow the classic Puzzle Baron cryptogram: click a cell, type a letter, and it
 fills every matching code letter. There's also a Letters Remaining strip, a
 letter-frequency table under the puzzle, a reference chart of English letter
@@ -17,16 +18,34 @@ connection to your opponent only lasts while that page is open.
 
 ## Play
 
-- **Open a Room**: you get a 4-character code and a share link.
+- **Set Up a Room**: pick the rules (or click **Use My Defaults**), then share
+  the 4-character code or link. Click **Start Match** once everyone's in.
 - **Join Room**: enter the code, or just open the share link.
-- **Practice Alone**: solo mode with a timer.
+- **Practice**: solo mode with a timer.
+- **Default Settings**: save your usual rules in this browser.
 
-Matches are a single puzzle, best of 3, or best of 5. Every puzzle starts
-completely blank.
+**Default Settings** (used for practice, and filled in by **Use My
+Defaults** when setting up a room): hints per round (0 for none, or
+unlimited), the Letters Remaining panel, the letter count table under the
+puzzle, highlighting matching letters, autofill, and the countdown length.
+With autofill off, typing fills only the box you clicked, and the table's
+"Your letter" row stays empty.
 
-**Hints:** either player can propose a hint at any time. If the other player
-agrees, the host picks a letter and it's revealed on *both* boards, so a hint
-never favors one side. In practice mode, hints are free and unlimited.
+**Personal preference** (only affects you, never part of a room's rules):
+letter case. Uppercase or Lowercase sets how your answers look and which keys
+count. Either accepts both.
+
+**Chosen fresh for every game:** number of rounds, number of players (2–6),
+round time limit, extra time for everyone else after the first solve, how many
+players must agree to a hint, and partial credit.
+
+**Scoring:** a solve is worth 100 points. If the round ends first, a player
+loses a set number of points for every unfinished letter beyond an allowance
+(for example, −10 per letter after the first 2), never going below 0. The
+highest total after the last round wins.
+
+**Hints:** any player can propose one. If enough other players agree, one
+letter is revealed on everyone's board. Practice hints are free.
 
 ## Deploy to GitHub Pages
 
@@ -48,11 +67,13 @@ shows to join. The flag follows you from page to page.
 
 ## How the multiplayer works
 
-Players connect directly, browser to browser, over WebRTC using
-[PeerJS](https://peerjs.com). PeerJS's free public server only introduces the
-two players. The host acts as referee: it picks the quote and a random seed,
-and both browsers build the identical cipher from them (`js/puzzle.js`). Only
-progress percentages and "solved" or "gave up" messages are exchanged.
+Players connect browser to browser over WebRTC using
+[PeerJS](https://peerjs.com). PeerJS's free public server only introduces them.
+The host's browser connects to every guest and acts as referee: it picks the
+quote and a random seed (every browser builds the identical cipher from them in
+`js/puzzle.js`), tracks progress, runs the time limit and grace period, counts
+hint votes and scores each round. Only progress, "solved"/"gave up" and hint
+messages are exchanged.
 
 Most pairs connect directly. Players behind a VPN, a corporate firewall or a
 strict mobile network need a **TURN relay**, which is set up in `js/config.js`:
@@ -65,7 +86,7 @@ To check the relay works, open the site with `?relay` on both sides. That
 forces every connection through the relay.
 
 When you change any JS or CSS file, bump the `?v=` number on the
-`<script>`/`<link>` tags in all three HTML pages so browsers don't keep using
+`<script>`/`<link>` tags in every HTML page so browsers don't keep using
 cached copies.
 
 ## Files
@@ -73,11 +94,16 @@ cached copies.
 | File | Purpose |
 | --- | --- |
 | `index.html` | Lobby: name, host a room, join a room, practice |
-| `play.html` | Waiting room and the game (`?mode=host`, `?mode=join&room=CODE`, `?mode=practice`) |
+| `create.html` | Room setup: choose the rules |
+| `settings.html` | Default Settings |
+| `play.html` | Waiting room and the game (`?mode=host&rules=…`, `?mode=join&room=CODE`, `?mode=practice`) |
 | `how-to-play.html` | Rules |
 | `css/style.css` | Web 2.0 theme on top of Bootstrap, plus the puzzle board |
 | `js/common.js` | Shared helpers: links that keep test flags, saved screen name |
 | `js/lobby.js` | Lobby page logic |
+| `js/settings.js` | Game rules: definitions, saved defaults, forms, scoring |
+| `js/settings-page.js` | Default Settings page logic |
+| `js/create.js` | Room setup page logic |
 | `js/game.js` | Game board, input, match flow |
 | `js/quotes.js` | Quote bank (add more here) |
 | `js/puzzle.js` | Seeded cipher and puzzle generation |

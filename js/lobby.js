@@ -1,4 +1,4 @@
-// Lobby page: collect a name and settings, then go to play.html.
+// Lobby page: collect a name, then set up a room, join one, or practice.
 (() => {
   const $ = (s) => document.querySelector(s);
 
@@ -30,7 +30,7 @@
   }
 
   $("#btn-solo").onclick = () => go({ mode: "practice" });
-  $("#btn-host").onclick = () => go({ mode: "host", rounds: $("#rounds").value });
+  $("#btn-host").onclick = () => { saveName(); location.href = AW.link("create.html"); };
   $("#btn-join").onclick = join;
   $("#join-code").addEventListener("keydown", (e) => { if (e.key === "Enter") join(); });
 })();

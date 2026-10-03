@@ -13,6 +13,11 @@ backend only when a feature truly needs shared, persistent state.
 - [x] Hints by mutual agreement: either player proposes at any time, and if the other agrees, the same letter is revealed on both boards (free in practice mode)
 - [x] Late-2000s "Web 2.0" look: glossy header and nav tabs, boxed panels, sidebar, striped progress bars
 - [x] Built on Bootstrap 5, with separate pages for the lobby, game and rules (the back button works)
+- [x] Rooms for up to 6 players, with a host-controlled Start Match
+- [x] Default Settings page (rules for practice and competition, plus personal letter case), and a room setup page with "Use My Defaults"
+- [x] Options: 0–5 or unlimited hints, Letters Remaining on/off, letter count table on/off, highlight matching letters, autofill on/off
+- [x] Per-game rules: player count, round time limit, grace period after the first solve, hint-agreement threshold, partial credit
+- [x] Points scoring: 100 per solve, with configurable deductions for unfinished letters
 - [x] 1v1 over WebRTC (PeerJS): room code and share link, host referees, same seeded cipher for both players
 - [x] Live rival progress bar, 3-2-1 countdown, best of 1/3/5, rematch, disconnect handling
 - [x] Practice (solo) mode
@@ -61,7 +66,7 @@ The biggest risk today is that some pairs of players can't connect at all.
 - [ ] Elo rating and a public Hall of Fame
 - [ ] Matchmaking queue: play a random opponent without sharing codes
 - [ ] Server-checked results so leaderboards can't be faked. Today, a determined player could read the answer out of the page, which is fine for friendly games.
-- [ ] Spectator links and more than 2 players ("battle royale" rooms)
+- [ ] Spectator links and bigger rooms (more than 6 players)
 
 ## Known limitations
 

@@ -152,18 +152,18 @@ body.solo .duel-only { display: none !important; }
 @keyframes aw-flash { 50% { background: #ffe45c; } }
 
 #puzzle-box { background: #f7fafd; }
-#board { display: flex; flex-wrap: wrap; gap: 14px 20px; }
+#board { display: flex; flex-wrap: wrap; gap: 16px 22px; }
 .word { display: flex; gap: 3px; }
-.cell { display: flex; flex-direction: column; align-items: center; width: 26px; }
+.cell { display: flex; flex-direction: column; align-items: center; width: 31px; }
 .cell .guess {
-  width: 100%; height: 28px; line-height: 26px; text-align: center;
-  font: bold 17px "Courier New", monospace;
+  width: 100%; height: 34px; line-height: 32px; text-align: center;
+  font: bold 21px "Courier New", monospace;
 }
 .cell.letter .guess { background: #fff; border: 1px solid var(--aw-input-border); cursor: pointer; box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.12); }
 .cell.letter .guess:hover { border-color: #3b83d8; }
-.cell .ciph { font: bold 12px "Courier New", monospace; color: #555; margin-top: 2px; }
-.cell.punct { width: 10px; }
-.cell.punct .guess { font-size: 18px; }
+.cell .ciph { font: bold 14px "Courier New", monospace; color: #555; margin-top: 3px; }
+.cell.punct { width: 12px; }
+.cell.punct .guess { font-size: 22px; }
 .cell.letter.same .guess { background: var(--aw-same); }
 .cell.letter.selected .guess { background: var(--aw-select); border-color: #d39b00; box-shadow: 0 0 4px #ffcc00; }
 .cell.given .guess { color: var(--aw-given); cursor: default; }
@@ -228,7 +228,8 @@ body.solo .duel-only { display: none !important; }
   .aw-logo { font-size: 28px; }
   .aw-nav .nav-link { padding: 7px 10px !important; font-size: 11px; }
   #board { gap: 10px 14px; }
-  .cell { width: 21px; }
-  .cell .guess { height: 24px; line-height: 22px; font-size: 14px; }
+  .cell { width: 25px; }
+  .cell .guess { height: 29px; line-height: 27px; font-size: 17px; }
+  .cell .ciph { font-size: 13px; }
   #kbd .btn { width: 8.4vw; }
 }

@@ -1,5 +1,5 @@
 // Puzzle generation. Everything is driven by a numeric seed so that both
-// players build the exact same cryptogram from the same (quoteIndex, seed).
+// players build the exact same cryptogram from the same (quote, seed).
 const ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 function mulberry32(a) {
@@ -40,8 +40,7 @@ function randomSeed() {
   return (Math.random() * 4294967296) >>> 0;
 }
 
-function buildPuzzle(quoteIndex, seed) {
-  const q = QUOTES[quoteIndex];
+function buildPuzzle(q, seed) {
   const rng = mulberry32(seed);
   const perm = derangement(rng);
   const enc = {}, sol = {};
@@ -51,5 +50,5 @@ function buildPuzzle(quoteIndex, seed) {
   const cipherText = [...plain].map((ch) => enc[ch] || ch).join("");
   const letters = [...new Set([...cipherText].filter((ch) => sol[ch]))];
 
-  return { quoteIndex, seed, plain, author: q.author, cipherText, sol, letters };
+  return { seed, plain, author: q.author, cipherText, sol, letters };
 }

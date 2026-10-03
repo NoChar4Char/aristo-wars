@@ -18,6 +18,7 @@ backend only when a feature truly needs shared, persistent state.
 - [x] Options: 0–5 or unlimited hints, Letters Remaining on/off, letter count table on/off, highlight matching letters, autofill on/off
 - [x] Per-game rules: player count, round time limit, grace period after the first solve, hint-agreement threshold, partial credit
 - [x] Points scoring: 100 per solve, with configurable deductions for unfinished letters
+- [x] You see everyone else's progress bar during a round, but not your own
 - [x] 1v1 over WebRTC (PeerJS): room code and share link, host referees, same seeded cipher for both players
 - [x] Live rival progress bar, 3-2-1 countdown, best of 1/3/5, rematch, disconnect handling
 - [x] Practice (solo) mode
@@ -46,8 +47,8 @@ The biggest risk today is that some pairs of players can't connect at all.
 
 ## v0.4: More puzzles and modes
 
-- [ ] Expand the quote bank to 500+ public-domain quotes, stored in `quotes.json` with categories (literature, history, science, humor)
-- [ ] Category picker for the host
+- [x] 5000 puzzle texts (10–40 words): hand-picked quotes plus public-domain book excerpts, built by `tools/build_quotes.py`
+- [ ] Categories (literature, philosophy, adventure, …) and a category picker for the host
 - [ ] Difficulty levels based on quote length (short quotes are harder to crack)
 - [ ] **Patristocrat** mode (no word spaces), the classic hard variant
 - [ ] Encrypt the source line as well, as an extra-hard option

@@ -241,7 +241,10 @@
 
   function nextRound() {
     S.roundNo++;
-    const m = { t: "round", n: S.roundNo, qi: pickQuote(), seed: randomSeed(), players: S.players, totals: S.totals };
+    // Send the quote itself (not its index) so every browser builds the same
+    // puzzle even if someone has an older copy of the quote list cached.
+    const q = QUOTES[pickQuote()];
+    const m = { t: "round", n: S.roundNo, quote: { text: q.text, author: q.author }, seed: randomSeed(), players: S.players, totals: S.totals };
     if (multi()) Net.send(m);
     beginRound(m);
   }
@@ -380,7 +383,7 @@
     S.roundNo = m.n;
     S.players = m.players;
     S.totals = m.totals;
-    S.puzzle = buildPuzzle(m.qi, m.seed);
+    S.puzzle = buildPuzzle({ text: String(m.quote.text), author: String(m.quote.author) }, m.seed);
     S.guesses = {}; S.locked = new Set(); S.hinted = new Set(); S.cellGuess = [];
     S.hintsUsed = 0;
     S.vote = null; S.myVote = null;
@@ -526,7 +529,9 @@
       const label = { solving: S.roundOver ? "Unfinished" : "Solving", solved: `Solved ${fmt(st.time || 0)}`, gaveup: "Gave up", left: "Left" }[st.state] || "";
       return `<li class="list-group-item d-flex align-items-center gap-2 py-1 ${st.state === "left" ? "aw-gone" : ""}">
         <span class="aw-pname text-truncate">${esc(p.name)}${me ? ' <small class="text-secondary">(you)</small>' : ""}</span>
-        <div class="progress flex-grow-1"><div class="progress-bar progress-bar-striped ${st.state === "solving" && !S.roundOver ? "progress-bar-animated" : ""} ${me ? "bg-success" : "bg-danger"}" style="width:${st.pct || 0}%"></div></div>
+        ${me && !S.roundOver
+          ? '<div class="flex-grow-1 small text-secondary fst-italic">Your progress is hidden</div>'
+          : `<div class="progress flex-grow-1"><div class="progress-bar progress-bar-striped ${st.state === "solving" && !S.roundOver ? "progress-bar-animated" : ""} ${me ? "bg-success" : "bg-danger"}" style="width:${st.pct || 0}%"></div></div>`}
         <span class="aw-pstate small text-secondary">${label}</span>
         <span class="badge aw-points">${S.totals[p.id] || 0} pts</span>
       </li>`;
